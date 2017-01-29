@@ -34,4 +34,36 @@ describe "User manages functions" do
     result = execute("SELECT * FROM test() AS result")
     expect(result).to eq("result" => "testest")
   end
+
+  it "handles functions with parameters" do
+    successfully "rails generate fx:function adder_integers"
+    write_function_definition "adder_integers_v01", <<-EOS
+      CREATE FUNCTION adder(x int, y int)
+      RETURNS int AS $$
+      BEGIN
+          RETURN $1 + $2;
+      END;
+      $$ LANGUAGE plpgsql;
+    EOS
+    successfully "rake db:migrate"
+
+    result = execute("SELECT * FROM adder(1, 2) AS result")
+    expect(result).to eq("result" => 3)
+
+    successfully "rails generate fx:function adder_floats"
+    write_function_definition "adder_floats_v01", <<-EOS
+      CREATE FUNCTION adder(x float, y float)
+      RETURNS float AS $$
+      BEGIN
+          RETURN $1 + $2;
+      END;
+      $$ LANGUAGE plpgsql;
+    EOS
+    successfully "rake db:migrate"
+
+    result = execute("SELECT * FROM adder(1.0, 2.0) AS result")
+    expect(result).to eq("result" => 3.0)
+
+    successfully "rake db:rollback"
+  end
 end
