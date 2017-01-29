@@ -3,12 +3,13 @@ module Fx
   class Function
     include Comparable
 
-    attr_reader :name, :definition
+    attr_reader :name, :definition, :arguments
     delegate :<=>, to: :name
 
     def initialize(function_row)
       @name = function_row.fetch("name")
       @definition = function_row.fetch("definition")
+      @arguments = function_row.fetch("arguments").presence || "()"
     end
 
     def ==(other)

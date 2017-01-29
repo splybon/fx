@@ -86,7 +86,10 @@ module Fx::Adapters
           EOS
         )
 
-        expect(adapter.functions.map(&:name)).to eq ["test"]
+        expect(adapter.functions.count).to eq 1
+        function = adapter.functions.first
+        expect(function.name).to eq "test"
+        expect(function.arguments).to eq "()"
       end
     end
 
