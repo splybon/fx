@@ -47,7 +47,36 @@ describe Fx::Statements::Function, :db do
 
       connection.drop_function(:test)
 
-      expect(database).to have_received(:drop_function).with(:test)
+      expect(database).to have_received(:drop_function).with("test()")
+    end
+
+    context "when exact arguments are specified" do
+      it "drops the function" do
+        database = stubbed_database
+
+        connection.drop_function(:test, arguments: "(x int, y int)")
+
+        expect(database).to have_received(:drop_function).
+          with("test(x int, y int)")
+      end
+    end
+
+    context "when the function shares its name" do
+      it "raises an exception if there are no arguments provided" do
+        database = stubbed_database(
+          functions: [
+            double("Function A", name: "test"),
+            double("Function B", name: "test"),
+          ]
+        )
+
+        expect {
+          connection.drop_function(:test)
+        }.to raise_error(
+          ArgumentError,
+          /There are multiple functions named `test'/,
+        )
+      end
     end
   end
 
@@ -89,8 +118,16 @@ describe Fx::Statements::Function, :db do
     end
   end
 
-  def stubbed_database
-    instance_spy("StubbedDatabase").tap do |stubbed_database|
+  def stubbed_database(functions: nil)
+    sample_function = double(
+      "Fx::Function",
+      name: "test",
+      signature: "test()",
+    )
+    instance_spy(
+      "StubbedDatabase",
+      functions: functions || [sample_function],
+    ).tap do |stubbed_database|
       allow(Fx).to receive(:database).and_return(stubbed_database)
     end
   end

@@ -3,6 +3,32 @@ require "fx/function"
 
 module Fx
   describe Function do
+    describe "#signature" do
+      context "when the function has arguments" do
+        it "returns the name plus those arguments" do
+          function = Function.new(
+            "name" => "name",
+            "definition" => "some defintion",
+            "arguments" => "(a int, b int)",
+          )
+
+          expect(function.signature).to eq "name(a int, b int)"
+        end
+      end
+
+      context "when the function does not have any arguments" do
+        it "returns the name plus the default arguments" do
+          function = Function.new(
+            "name" => "name",
+            "definition" => "some defintion",
+            "arguments" => "",
+          )
+
+          expect(function.signature).to eq "name()"
+        end
+      end
+    end
+
     describe "#<=>" do
       it "delegates to `name`" do
         function_a = Function.new(

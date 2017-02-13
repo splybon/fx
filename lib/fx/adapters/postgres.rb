@@ -121,11 +121,15 @@ module Fx
       # This is typically called in a migration via
       # {Fx::Statements::Function#drop_function}.
       #
-      # @param name The name of the function to drop
+      # @param signature The signature of the function to drop.
+      #
+      # Example:
+      #
+      #   `adder(x int, y int)`
       #
       # @return [void]
-      def drop_function(name)
-        execute "DROP FUNCTION #{name}();"
+      def drop_function(signature)
+        execute "DROP FUNCTION #{signature};"
       end
 
       # Drops the trigger from the database

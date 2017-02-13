@@ -50,7 +50,7 @@ describe "User manages functions" do
     result = execute("SELECT * FROM adder(1, 2) AS result")
     expect(result).to eq("result" => 3)
 
-    successfully "rails generate fx:function adder_floats"
+    successfully "rails generate fx:function adder_floats --arguments '(x float, y float)'"
     write_function_definition "adder_floats_v01", <<-EOS
       CREATE FUNCTION adder(x float, y float)
       RETURNS float AS $$

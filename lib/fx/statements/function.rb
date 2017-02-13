@@ -52,8 +52,17 @@ module Fx
       # @example Drop a function, rolling back to version 2 on rollback
       #   drop_function(:uppercase_users_name, revert_to_version: 2)
       #
-      def drop_function(name, revert_to_version: nil)
-        Fx.database.drop_function(name)
+      def drop_function(
+        name,
+        arguments: Fx::Function::DEFAULT_ARGUMENT,
+        revert_to_version: nil
+      )
+        raise arguments.inspect
+        require 'pry'; binding.pry
+        Fx.database.drop_function function_signature(
+          name: name,
+          arguments: arguments,
+        )
       end
 
       # Update a database function.
@@ -85,6 +94,7 @@ module Fx
       #     $$ LANGUAGE plpgsql;
       #   SQL
       #
+      # TODO: handle arguments
       def update_function(name, version: nil, sql_definition: nil, revert_to_version: nil)
         if version.nil? && sql_definition.nil?
           raise(
@@ -99,6 +109,28 @@ module Fx
         ).to_sql
 
         Fx.database.update_function(name, sql_definition)
+      end
+
+      private
+
+      def function_signature(name:, arguments:)
+        arguments ||= Fx::Function::DEFAULT_ARGUMENT
+        matching_functions = Fx.database.functions.select { |f| f.name == name.to_s }
+
+        if matching_functions.size == 1
+          matching_functions.first.signature
+        elsif matching_functions.size > 1
+          raise(
+            ArgumentError,
+            <<-EOS
+There are multiple functions named `#{name}',
+Please specify the the full signature by passing the `arguments' parameter to
+denote which function this corresponds to.
+            EOS
+          )
+        else
+          "#{name}#{arguments}"
+        end
       end
     end
   end

@@ -7,6 +7,7 @@ module Fx
     class FunctionGenerator < Rails::Generators::NamedBase
       include Rails::Generators::Migration
       source_root File.expand_path("../templates", __FILE__)
+      argument :arguments, type: :hash, required: false
 
       def create_functions_directory
         unless function_definition_path.exist?
@@ -72,6 +73,16 @@ module Fx
             "\"#{singular_name}\""
           else
             ":#{singular_name}"
+          end
+        end
+
+        def formatted_arguments
+          if arguments
+            args = arguments["arguments"] || arguments["args"]
+
+            if args
+              %Q(arguments: "#{args}")
+            end
           end
         end
       end
